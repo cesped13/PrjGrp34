@@ -1,0 +1,118 @@
+@startuml DiagramaClases
+
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #DDEEFF
+  BorderColor #336699
+  ArrowColor #336699
+}
+
+class Maquina {
+  - id : Long
+  - nombre : String
+  - localizacion : Localizacion
+  --
+  + Maquina(id: Long, nombre: String, loc: Localizacion)
+  + getId() : Long
+  + getNombre() : String
+  + getLocalizacion() : Localizacion
+  + setNombre(nombre: String) : void
+  ..excepciones..
+  ' setNombre -> IllegalArgumentException si nombre nulo o vacio
+}
+
+class Localizacion {
+  - id : Long
+  - descripcion : String
+  - latitud : Double
+  - longitud : Double
+  --
+  + Localizacion(id: Long, desc: String, lat: Double, lon: Double)
+  + getId() : Long
+  + getLatitud() : Double
+  + getLongitud() : Double
+  + getDescripcion() : String
+  ..excepciones..
+  ' Constructor -> IllegalArgumentException si lat/lon fuera de rango
+}
+
+class Producto {
+  - id : Long
+  - nombre : String
+  - precio : Double
+  - categoria : String
+  --
+  + Producto(id: Long, nombre: String, precio: Double, cat: String)
+  + getId() : Long
+  + getNombre() : String
+  + getPrecio() : Double
+  + getCategoria() : String
+  + setPrecio(precio: Double) : void
+  ..excepciones..
+  ' setPrecio -> IllegalArgumentException si precio <= 0
+}
+
+class StockMaquina {
+  - id : Long
+  - maquina : Maquina
+  - producto : Producto
+  - cantidad : Integer
+  - cantidadMinima : Integer
+  - velocidadConsumo : Double
+  - ultimaActualizacion : LocalDate
+  --
+  + StockMaquina(id, maquina, producto, cantidad, cantMin, velConsumo)
+  + getCantidad() : Integer
+  + actualizarCantidad(unidades: Integer) : void
+  + necesitaReposicion() : boolean
+  + getFechaEstimadaAgotamiento() : LocalDate
+  ..excepciones..
+  ' actualizarCantidad -> IllegalArgumentException si unidades < 0
+  ' actualizarCantidad -> IllegalStateException si cantidad resultante < 0
+}
+
+class MaquinaDAO {
+  - maquinas : List<Maquina>
+  --
+  + add(maquina: Maquina) : void
+  + findById(id: Long) : Maquina
+  + findAll() : List<Maquina>
+  + remove(id: Long) : boolean
+  ..excepciones..
+  ' add -> IllegalArgumentException si maquina null o id duplicado
+  ' findById -> NoSuchElementException si no existe
+}
+
+class ProductoDAO {
+  - productos : List<Producto>
+  --
+  + add(producto: Producto) : void
+  + findById(id: Long) : Producto
+  + findAll() : List<Producto>
+  + remove(id: Long) : boolean
+  ..excepciones..
+  ' add -> IllegalArgumentException si producto null o id duplicado
+  ' findById -> NoSuchElementException si no existe
+}
+
+class StockDAO {
+  - stocks : List<StockMaquina>
+  --
+  + add(stock: StockMaquina) : void
+  + findByMaquina(maquinaId: Long) : List<StockMaquina>
+  + findByMaquinaYProducto(maqId: Long, prodId: Long) : StockMaquina
+  + findAll() : List<StockMaquina>
+  + getProductosParaReposicion(maquinaId: Long) : List<StockMaquina>
+  ..excepciones..
+  ' findByMaquinaYProducto -> NoSuchElementException si no existe
+  ' getProductosParaReposicion -> NoSuchElementException si maquina no existe
+}
+
+MaquinaDAO "1" o-- "0..*" Maquina
+ProductoDAO "1" o-- "0..*" Producto
+StockDAO "1" o-- "0..*" StockMaquina
+StockMaquina "*" --> "1" Maquina
+StockMaquina "*" --> "1" Producto
+Maquina "1" --> "1" Localizacion
+
+@enduml

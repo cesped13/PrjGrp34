@@ -1,0 +1,66 @@
+@startuml DiagramaER
+
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #FEFECE
+  BorderColor #A80036
+}
+
+entity "Maquina" as Maquina {
+  * id : Long <<PK>>
+  --
+  * nombre : String {max 100 chars}
+  * latitud : Double {-90.0 <= x <= 90.0}
+  * longitud : Double {-180.0 <= x <= 180.0}
+  * descripcion : String {opcional, max 255}
+}
+
+entity "Producto" as Producto {
+  * id : Long <<PK>>
+  --
+  * nombre : String {max 100 chars}
+  * precio : Double {> 0.0}
+  * categoria : String {max 50 chars}
+}
+
+entity "StockMaquina" as Stock {
+  * id : Long <<PK>>
+  --
+  * cantidad : Integer {>= 0}
+  * cantidadMinima : Integer {>= 0}
+  * velocidadConsumo : Double {unidades/dia, > 0}
+  * ultimaActualizacion : LocalDate {formato ISO}
+}
+
+entity "Localizacion" as Loc {
+  * id : Long <<PK>>
+  --
+  * descripcion : String {max 255}
+  * latitud : Double {-90.0 <= x <= 90.0}
+  * longitud : Double {-180.0 <= x <= 180.0}
+}
+
+Maquina ||--|| Loc : "situada en"
+Maquina ||--o{ Stock : "contiene"
+Producto ||--o{ Stock : "referenciado en"
+
+note right of Stock
+  La fecha de agotamiento estimada se calcula:
+  fechaAgotamiento = hoy + (cantidad / velocidadConsumo)
+  Necesita reposicion si fechaAgotamiento <= mañana
+end note
+
+note right of Maquina
+  Restricciones:
+  - id unico, no nulo
+  - nombre no vacio
+  - latitud y longitud validas
+end note
+
+note right of Producto
+  Restricciones:
+  - precio con 2 decimales maximos
+  - nombre unico por sistema
+end note
+
+@enduml
