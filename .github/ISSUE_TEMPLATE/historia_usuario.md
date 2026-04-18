@@ -1,3 +1,10 @@
+---
+name: Historia de usuario
+about: Template para historias del proyecto PrjGrp34
+labels: ''
+assignees: ''
+---
+
 ## Identificación
 
 | Campo | Valor |
