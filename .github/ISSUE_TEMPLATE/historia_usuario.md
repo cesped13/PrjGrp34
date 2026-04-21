@@ -19,9 +19,8 @@ assignees: ''
 
 ## Historia de usuario
 
-> **Como** [rol del usuario]
-> **quiero** [acción o funcionalidad]
-> **para** [valor o beneficio obtenido]
+> **Necesidad:** [acción o funcionalidad requerida]
+> **Propósito:** [valor, beneficio o razón técnica por la que se necesita]
 
 ---
 
@@ -78,7 +77,7 @@ Ver Anexo CB (Caja Blanca) en la documentación del proyecto.
 
 ---
 
-## 📌 Columna Kanban actual
+## Columna Kanban actual
 
 - [ ] Preparada
 - [ ] Codificación / DoneC
