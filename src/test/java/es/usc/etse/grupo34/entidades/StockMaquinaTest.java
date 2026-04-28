@@ -6,11 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class StockMaquinaTest {
@@ -29,73 +28,120 @@ class StockMaquinaTest {
     }
 
     @Test
-    void debeReducirCantidadCuandoDescuentoEsValido() {
-        stock.actualizarCantidad(3);
-
-        assertEquals(7, stock.getCantidad());
-        assertEquals(java.time.LocalDate.now(), stock.getUltimaActualizacion());
-        verifyNoInteractions(maquinaMock, productoMock);
-    }
-
-    @Test
-    void noDebeCambiarCantidadCuandoUnidadesEsCero() {
-        stock.actualizarCantidad(0);
-
+    void constructorValidoDebeCrearStockMaquina() {
+        assertEquals(100L, stock.getId());
+        assertEquals(maquinaMock, stock.getMaquina());
+        assertEquals(productoMock, stock.getProducto());
         assertEquals(10, stock.getCantidad());
+        assertEquals(2, stock.getCantidadMinima());
+        assertEquals(2.5, stock.getVelocidadConsumo());
+        assertEquals(LocalDate.now(), stock.getUltimaActualizacion());
+
         verifyNoInteractions(maquinaMock, productoMock);
-    }
-
-    @Test
-    void debeLanzarIllegalArgumentExceptionCuandoUnidadesEsNegativoONulo() {
-        assertThrows(IllegalArgumentException.class, () -> stock.actualizarCantidad(-1));
-        assertThrows(IllegalArgumentException.class, () -> stock.actualizarCantidad(null));
-        assertEquals(10, stock.getCantidad());
-        verifyNoInteractions(maquinaMock, productoMock);
-    }
-
-    @Test
-    void debeLanzarIllegalStateExceptionCuandoNoHayStockSuficiente() {
-        stock = new StockMaquina(101L, maquinaMock, productoMock, 2, 1, 1.0);
-
-        assertThrows(IllegalStateException.class, () -> stock.actualizarCantidad(3));
-        assertEquals(2, stock.getCantidad());
-        verifyNoInteractions(maquinaMock, productoMock);
-    }
-
-    @Test
-    void necesitaReposicionDebeSerTrueCuandoAgotamientoEsHoy() {
-        StockMaquina stockSpy = spy(stock);
-        doReturn(java.time.LocalDate.now()).when(stockSpy).getFechaEstimadaAgotamiento();
-
-        assertTrue(stockSpy.necesitaReposicion());
-        verify(stockSpy, times(1)).getFechaEstimadaAgotamiento();
-    }
-
-    @Test
-    void necesitaReposicionDebeSerFalseCuandoAgotamientoEsPasadoManana() {
-        StockMaquina stockSpy = spy(stock);
-        doReturn(java.time.LocalDate.now().plusDays(2)).when(stockSpy).getFechaEstimadaAgotamiento();
-
-        assertFalse(stockSpy.necesitaReposicion());
-        verify(stockSpy, atLeastOnce()).getFechaEstimadaAgotamiento();
-        verify(stockSpy, atMost(1)).getFechaEstimadaAgotamiento();
-    }
-
-    @Test
-    void getFechaEstimadaAgotamientoDebeCalcularConCeil() {
-        stock = new StockMaquina(102L, maquinaMock, productoMock, 10, 1, 3.0);
-
-        java.time.LocalDate esperada = java.time.LocalDate.now().plusDays(4);
-        assertEquals(esperada, stock.getFechaEstimadaAgotamiento());
     }
 
     @Test
     void constructorDebeValidarParametrosObligatorios() {
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(null, maquinaMock, productoMock, 1, 1, 1.0));
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(1L, null, productoMock, 1, 1, 1.0));
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(1L, maquinaMock, null, 1, 1, 1.0));
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(1L, maquinaMock, productoMock, -1, 1, 1.0));
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(1L, maquinaMock, productoMock, 1, -1, 1.0));
-        assertThrows(IllegalArgumentException.class, () -> new StockMaquina(1L, maquinaMock, productoMock, 1, 1, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(null, maquinaMock, productoMock, 1, 1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, null, productoMock, 1, 1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, null, 1, 1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, null, 1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, -1, 1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, 1, null, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, 1, -1, 1.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, 1, 1, null));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, 1, 1, 0.0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StockMaquina(1L, maquinaMock, productoMock, 1, 1, -1.0));
+    }
+
+    @Test
+    void actualizarCantidadDebeReducirCantidadCuandoUnidadesEsValido() {
+        stock.actualizarCantidad(3);
+
+        assertEquals(7, stock.getCantidad());
+        assertEquals(LocalDate.now(), stock.getUltimaActualizacion());
+
+        verifyNoInteractions(maquinaMock, productoMock);
+    }
+
+    @Test
+    void actualizarCantidadNoDebeCambiarCantidadCuandoUnidadesEsCero() {
+        stock.actualizarCantidad(0);
+
+        assertEquals(10, stock.getCantidad());
+
+        verifyNoInteractions(maquinaMock, productoMock);
+    }
+
+    @Test
+    void actualizarCantidadDebeLanzarExcepcionCuandoUnidadesEsNuloONegativo() {
+        assertThrows(IllegalArgumentException.class,
+                () -> stock.actualizarCantidad(null));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> stock.actualizarCantidad(-1));
+
+        assertEquals(10, stock.getCantidad());
+
+        verifyNoInteractions(maquinaMock, productoMock);
+    }
+
+    @Test
+    void actualizarCantidadDebeLanzarExcepcionCuandoNoHayStockSuficiente() {
+        assertThrows(IllegalStateException.class,
+                () -> stock.actualizarCantidad(11));
+
+        assertEquals(10, stock.getCantidad());
+
+        verifyNoInteractions(maquinaMock, productoMock);
+    }
+
+    @Test
+    void getFechaEstimadaAgotamientoDebeCalcularConCeil() {
+        StockMaquina stock = new StockMaquina(101L, maquinaMock, productoMock, 10, 1, 3.0);
+
+        assertEquals(LocalDate.now().plusDays(4), stock.getFechaEstimadaAgotamiento());
+    }
+
+    @Test
+    void getFechaEstimadaAgotamientoDebeSerHoyCuandoCantidadEsCero() {
+        StockMaquina stock = new StockMaquina(102L, maquinaMock, productoMock, 0, 1, 3.0);
+
+        assertEquals(LocalDate.now(), stock.getFechaEstimadaAgotamiento());
+    }
+
+    @Test
+    void necesitaReposicionDebeSerTrueCuandoAgotamientoEsHoyOMañana() {
+        StockMaquina stockHoy = new StockMaquina(103L, maquinaMock, productoMock, 0, 1, 1.0);
+        StockMaquina stockManana = new StockMaquina(104L, maquinaMock, productoMock, 1, 1, 1.0);
+
+        assertTrue(stockHoy.necesitaReposicion());
+        assertTrue(stockManana.necesitaReposicion());
+    }
+
+    @Test
+    void necesitaReposicionDebeSerFalseCuandoAgotamientoEsDespuesDeManana() {
+        StockMaquina stock = new StockMaquina(105L, maquinaMock, productoMock, 3, 1, 1.0);
+
+        assertFalse(stock.necesitaReposicion());
     }
 }
