@@ -1,72 +1,72 @@
 package es.usc.etse.grupo34.daos;
 
 import es.usc.etse.grupo34.entidades.Producto;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
-public class ProductoDAOTest {
+@DisplayName("ProductoDAO – pruebas de integración")
+class ProductoDAOTest {
+
+    private ProductoDAO dao;
+
+    @BeforeEach
+    void setUp() {
+        dao = new ProductoDAO();
+    }
 
     @Test
-    void addDebeGuardarProductoValido() {
-        ProductoDAO dao = new ProductoDAO();
-        Producto producto = mockProducto(1L, "Agua");
+    @DisplayName("add de producto válido: findAll devuelve exactamente un elemento")
+    void addProductoValido_findAllDevuelveUnElemento() {
+        Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
         dao.add(producto);
 
-        List<Producto> productos = dao.findAll();
-        assertEquals(1, productos.size());
-        assertSame(producto, productos.get(0));
-        verify(producto, atLeastOnce()).getId();
-        verify(producto, atLeastOnce()).getNombre();
+        List<Producto> lista = dao.findAll();
+        assertEquals(1, lista.size());
+        assertSame(producto, lista.get(0));
     }
 
     @Test
-    void addDebeFallarSiProductoEsNulo() {
-        ProductoDAO dao = new ProductoDAO();
-
+    @DisplayName("add(null) lanza IllegalArgumentException y el DAO queda vacío")
+    void addNulo_lanzaExcepcion() {
         assertThrows(IllegalArgumentException.class, () -> dao.add(null));
+        assertTrue(dao.findAll().isEmpty());
     }
 
     @Test
-    void addDebeFallarSiIdEstaDuplicado() {
-        ProductoDAO dao = new ProductoDAO();
-        Producto primero = mockProducto(1L, "Agua");
-        Producto segundoConMismoId = mockProductoConId(1L);
+    @DisplayName("add con id duplicado lanza IllegalArgumentException")
+    void addIdDuplicado_lanzaExcepcion() {
+        Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
+        Producto duplicado = new Producto(1L, "Agua2", 2.00, "Bebida");
 
         dao.add(primero);
 
-        assertThrows(IllegalArgumentException.class, () -> dao.add(segundoConMismoId));
+        assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
+        assertEquals(1, dao.findAll().size());
     }
 
     @Test
-    void addDebeFallarSiNombreEstaDuplicado() {
-        ProductoDAO dao = new ProductoDAO();
-        Producto primero = mockProducto(1L, "Agua");
-        Producto segundoConMismoNombre = mockProducto(2L, "Agua");
+    @DisplayName("add con nombre duplicado lanza IllegalArgumentException")
+    void addNombreDuplicado_lanzaExcepcion() {
+        Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
+        Producto duplicado = new Producto(2L, "Agua", 2.00, "Bebida");
 
         dao.add(primero);
 
-        assertThrows(IllegalArgumentException.class, () -> dao.add(segundoConMismoNombre));
+        assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
+        assertEquals(1, dao.findAll().size());
     }
 
     @Test
-    void findByIdDebeDevolverProductoSiExiste() {
-        ProductoDAO dao = new ProductoDAO();
-        Producto producto = mockProducto(9L, "Cafe");
+    @DisplayName("findById devuelve producto existente")
+    void findById_existente_devuelveProducto() {
+        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
         dao.add(producto);
 
         Producto encontrado = dao.findById(9L);
@@ -75,51 +75,29 @@ public class ProductoDAOTest {
     }
 
     @Test
-    void findByIdDebeFallarSiNoExiste() {
-        ProductoDAO dao = new ProductoDAO();
-        dao.add(mockProducto(1L, "Agua"));
+    @DisplayName("findById lanza NoSuchElementException si no existe")
+    void findById_inexistente_lanzaExcepcion() {
+        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
+        dao.add(producto);
 
         assertThrows(NoSuchElementException.class, () -> dao.findById(999L));
     }
 
     @Test
-    void findByIdDebeFallarSiIdEsNulo() {
-        ProductoDAO dao = new ProductoDAO();
-
+    @DisplayName("findById(null) lanza IllegalArgumentException")
+    void findById_idNulo_lanzaExcepcion() {
         assertThrows(IllegalArgumentException.class, () -> dao.findById(null));
     }
 
     @Test
-    void findAllDebeDevolverListaVaciaSiNoHayDatos() {
-        ProductoDAO dao = new ProductoDAO();
+    @DisplayName("findAll devuelve lista vacía y copia defensiva")
+    void findAll_vacioYCopiaDefensiva() {
+        assertTrue(dao.findAll().isEmpty());
 
-        List<Producto> productos = dao.findAll();
-
-        assertTrue(productos.isEmpty());
-    }
-
-    @Test
-    void findAllDebeDevolverCopiaDefensiva() {
-        ProductoDAO dao = new ProductoDAO();
-        Producto producto = mockProducto(7L, "Te");
-        dao.add(producto);
-
+        dao.add(new Producto(7L, "Te", 1.20, "Bebida"));
         List<Producto> copia = dao.findAll();
         copia.clear();
 
         assertEquals(1, dao.findAll().size());
-    }
-
-    private Producto mockProducto(Long id, String nombre) {
-        Producto producto = mock(Producto.class);
-        when(producto.getId()).thenReturn(id);
-        when(producto.getNombre()).thenReturn(nombre);
-        return producto;
-    }
-
-    private Producto mockProductoConId(Long id) {
-        Producto producto = mock(Producto.class);
-        when(producto.getId()).thenReturn(id);
-        return producto;
     }
 }

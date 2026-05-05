@@ -6,16 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-/**
- * DAO en memoria para la HU-02.
- *
- * Reglas implementadas:
- * - No admite productos nulos.
- * - No admite ids duplicados.
- * - No admite nombres duplicados
- *   pedida en la historia de usuario.
- *
- */
 public class ProductoDAO {
 
     private final List<Producto> productos;
@@ -26,7 +16,7 @@ public class ProductoDAO {
 
     public void add(Producto producto) {
         if (producto == null) {
-            throw new IllegalArgumentException("No se puede insertar un producto nulo");
+            throw new IllegalArgumentException("El producto no puede ser nulo");
         }
 
         if (existeId(producto.getId())) {
@@ -39,6 +29,7 @@ public class ProductoDAO {
 
         productos.add(producto);
     }
+
 
     public Producto findById(Long id) {
         if (id == null) {

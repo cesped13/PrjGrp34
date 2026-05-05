@@ -1,112 +1,91 @@
 package es.usc.etse.grupo34.entidades;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Producto – pruebas unitarias")
 class ProductoTest {
 
     @Test
-    void constructorDebeCrearProductoConDatosValidos() {
+    @DisplayName("Constructor válido crea el producto con los datos correctos")
+    void constructorValido_creaProducto() {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
-        assertEquals(1L, producto.getId());
-        assertEquals("Agua", producto.getNombre());
-        assertEquals(1.50, producto.getPrecio());
-        assertEquals("Bebida", producto.getCategoria());
+        assertAll("Atributos del producto",
+                () -> assertEquals(1L, producto.getId()),
+                () -> assertEquals("Agua", producto.getNombre()),
+                () -> assertEquals(1.50, producto.getPrecio(), 0.001),
+                () -> assertEquals("Bebida", producto.getCategoria())
+        );
     }
 
     @Test
-    void constructorDebeRecortarNombreYCategoria() {
+    @DisplayName("Constructor recorta nombre y categoría")
+    void constructor_recortaNombreYCategoria() {
         Producto producto = new Producto(2L, "  Zumo  ", 2.0, "  Bebida fria  ");
 
         assertEquals("Zumo", producto.getNombre());
         assertEquals("Bebida fria", producto.getCategoria());
     }
 
-    @Test
-    void constructorDebeFallarSiIdEsNulo() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(null, "Agua", 1.50, "Bebida"));
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    @DisplayName("Nombre nulo, vacío o solo espacios lanza IllegalArgumentException")
+    void nombreInvalido_lanzaExcepcion(String nombre) {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Producto(1L, nombre, 1.50, "Bebida"));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    @DisplayName("Categoría nula, vacía o solo espacios lanza IllegalArgumentException")
+    void categoriaInvalida_lanzaExcepcion(String categoria) {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Producto(1L, "Agua", 1.50, categoria));
     }
 
     @Test
-    void constructorDebeFallarSiNombreEsVacio() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "", 1.50, "Bebida"));
+    @DisplayName("Id nulo lanza IllegalArgumentException")
+    void idNulo_lanzaExcepcion() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Producto(null, "Agua", 1.50, "Bebida"));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(doubles = {0.0, -1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
+    @DisplayName("Precio inválido lanza IllegalArgumentException")
+    void precioInvalido_lanzaExcepcion(Double precio) {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Producto(1L, "Agua", precio, "Bebida"));
     }
 
     @Test
-    void constructorDebeFallarSiNombreEsNulo() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, null, 1.50, "Bebida"));
-    }
-
-    @Test
-    void constructorDebeFallarSiNombreEsSoloEspacios() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "   ", 1.50, "Bebida"));
-    }
-
-    @Test
-    void constructorDebeFallarSiCategoriaEsVacia() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", 1.50, ""));
-    }
-
-    @Test
-    void constructorDebeFallarSiCategoriaEsNula() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", 1.50, null));
-    }
-
-    @Test
-    void constructorDebeFallarSiCategoriaEsSoloEspacios() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", 1.50, "  "));
-    }
-
-    @Test
-    void constructorDebeFallarSiPrecioEsCero() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", 0.0, "Bebida"));
-    }
-
-    @Test
-    void constructorDebeFallarSiPrecioEsNegativo() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", -1.0, "Bebida"));
-    }
-
-    @Test
-    void constructorDebeFallarSiPrecioEsNaN() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", Double.NaN, "Bebida"));
-    }
-
-    @Test
-    void constructorDebeFallarSiPrecioEsInfinito() {
-        assertThrows(IllegalArgumentException.class, () -> new Producto(1L, "Agua", Double.POSITIVE_INFINITY, "Bebida"));
-    }
-
-    @Test
-    void setPrecioDebeActualizarCuandoEsValido() {
+    @DisplayName("setPrecio actualiza precio válido")
+    void setPrecio_valido_actualiza() {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
         producto.setPrecio(2.00);
 
-        assertEquals(2.00, producto.getPrecio());
+        assertEquals(2.00, producto.getPrecio(), 0.001);
     }
 
-    @Test
-    void setPrecioDebeFallarSiEsCero() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(doubles = {0.0, -1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
+    @DisplayName("setPrecio rechaza precio inválido")
+    void setPrecio_invalido_lanzaExcepcion(Double precio) {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
-        assertThrows(IllegalArgumentException.class, () -> producto.setPrecio(0.0));
-    }
-
-    @Test
-    void setPrecioDebeFallarSiEsNegativo() {
-        Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
-
-        assertThrows(IllegalArgumentException.class, () -> producto.setPrecio(-0.01));
-    }
-
-    @Test
-    void setPrecioDebeFallarSiEsNaN() {
-        Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
-
-        assertThrows(IllegalArgumentException.class, () -> producto.setPrecio(Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> producto.setPrecio(precio));
     }
 }
