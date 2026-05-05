@@ -8,23 +8,10 @@ public class Producto {
     private final String categoria;
 
     public Producto(Long id, String nombre, Double precio, String categoria) {
-        if (id == null) {
-            throw new IllegalArgumentException("El id no puede ser nulo");
-        }
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacio");
-        }
-        if (precio == null || precio <= 0) {
-            throw new IllegalArgumentException("El precio debe ser mayor que cero");
-        }
-        if (categoria == null || categoria.isBlank()) {
-            throw new IllegalArgumentException("La categoria no puede estar vacia");
-        }
-
-        this.id = id;
-        this.nombre = nombre;
-        this.precio = precio;
-        this.categoria = categoria;
+        this.id = validarId(id);
+        this.nombre = validarTexto(nombre, "nombre");
+        this.precio = validarPrecio(precio);
+        this.categoria = validarTexto(categoria, "categoria");
     }
 
     public Long getId() {
@@ -44,9 +31,27 @@ public class Producto {
     }
 
     public void setPrecio(Double precio) {
-        if (precio == null || precio <= 0) {
+        this.precio = validarPrecio(precio);
+    }
+
+    private static Long validarId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("El id no puede ser nulo");
+        }
+        return id;
+    }
+
+    private static String validarTexto(String texto, String campo) {
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException("El " + campo + " no puede estar vacio");
+        }
+        return texto.trim();
+    }
+
+    private static Double validarPrecio(Double precio) {
+        if (precio == null || Double.isNaN(precio) || Double.isInfinite(precio) || precio <= 0) {
             throw new IllegalArgumentException("El precio debe ser mayor que cero");
         }
-        this.precio = precio;
+        return precio;
     }
 }

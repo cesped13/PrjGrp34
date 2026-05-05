@@ -10,17 +10,7 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pruebas de integración para {@link ProductoDAO} (HU-05, Sprint 1).
- *
- * Estrategia (IEEE 829) – Caja Negra, Clases de Equivalencia:
- *  CP10 – add válido: findAll devuelve el producto
- *  CP11 – add(null) lanza IllegalArgumentException
- *  CP12 – add con id duplicado lanza IllegalArgumentException
- *  CP13/14 – findById: existente devuelve producto / inexistente lanza excepción
- *  CP15 – findAll vacío + copia defensiva
- */
-@DisplayName("ProductoDAO – pruebas de integración (HU-05)")
+@DisplayName("ProductoDAO – pruebas de integración")
 class ProductoDAOTest {
 
     private ProductoDAO dao;
@@ -30,68 +20,84 @@ class ProductoDAOTest {
         dao = new ProductoDAO();
     }
 
-    // CP10 – add válido: producto almacenado, findAll devuelve 1 elemento
     @Test
-    @DisplayName("CP10 – add de producto válido: findAll devuelve exactamente un elemento")
-    void cp10_addProductoValido_findAllDevuelveUnElemento() {
+    @DisplayName("add de producto válido: findAll devuelve exactamente un elemento")
+    void addProductoValido_findAllDevuelveUnElemento() {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
         dao.add(producto);
 
         List<Producto> lista = dao.findAll();
-        assertEquals(1, lista.size(), "findAll debe devolver 1 elemento tras add");
-        assertSame(producto, lista.get(0), "Debe ser la misma instancia");
+        assertEquals(1, lista.size());
+        assertSame(producto, lista.get(0));
     }
 
-    // CP11 – add(null) lanza excepción
     @Test
-    @DisplayName("CP11 – add(null) lanza IllegalArgumentException y el DAO queda vacío")
-    void cp11_addNulo_lanzaExcepcion() {
+    @DisplayName("add(null) lanza IllegalArgumentException y el DAO queda vacío")
+    void addNulo_lanzaExcepcion() {
         assertThrows(IllegalArgumentException.class, () -> dao.add(null));
-        assertTrue(dao.findAll().isEmpty(), "El DAO debe permanecer vacío");
+        assertTrue(dao.findAll().isEmpty());
     }
 
-    // CP12 – id duplicado lanza excepción
     @Test
-    @DisplayName("CP12 – add con id duplicado lanza IllegalArgumentException")
-    void cp12_addIdDuplicado_lanzaExcepcion() {
+    @DisplayName("add con id duplicado lanza IllegalArgumentException")
+    void addIdDuplicado_lanzaExcepcion() {
         Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
         Producto duplicado = new Producto(1L, "Agua2", 2.00, "Bebida");
 
         dao.add(primero);
 
         assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
-        assertEquals(1, dao.findAll().size(), "El DAO no debe aceptar el duplicado");
+        assertEquals(1, dao.findAll().size());
     }
 
-    // CP13 – findById existente  /  CP14 – findById inexistente
     @Test
-    @DisplayName("CP13/CP14 – findById: devuelve producto existente y lanza excepción si no existe")
-    void cp13_cp14_findById_existenteEInexistente() {
-        Producto producto = new Producto(9L, "Café", 1.80, "Bebida");
+    @DisplayName("add con nombre duplicado lanza IllegalArgumentException")
+    void addNombreDuplicado_lanzaExcepcion() {
+        Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
+        Producto duplicado = new Producto(2L, "Agua", 2.00, "Bebida");
+
+        dao.add(primero);
+
+        assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
+        assertEquals(1, dao.findAll().size());
+    }
+
+    @Test
+    @DisplayName("findById devuelve producto existente")
+    void findById_existente_devuelveProducto() {
+        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
         dao.add(producto);
 
-        // CP13 – id existente
         Producto encontrado = dao.findById(9L);
-        assertSame(producto, encontrado, "CP13: debe devolver la instancia correcta");
 
-        // CP14 – id inexistente
-        assertThrows(NoSuchElementException.class, () -> dao.findById(999L),
-                "CP14: id inexistente debe lanzar NoSuchElementException");
+        assertSame(producto, encontrado);
     }
 
-    // CP15 – findAll vacío y copia defensiva
     @Test
-    @DisplayName("CP15 – findAll: lista vacía y copia defensiva no afecta al DAO")
-    void cp15_findAll_vacioYCopiaDefensiva() {
-        // Lista vacía
-        assertTrue(dao.findAll().isEmpty(), "CP15: findAll debe devolver lista vacía");
+    @DisplayName("findById lanza NoSuchElementException si no existe")
+    void findById_inexistente_lanzaExcepcion() {
+        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
+        dao.add(producto);
 
-        // Copia defensiva: mutar la lista devuelta no altera el DAO
-        dao.add(new Producto(7L, "Té", 1.20, "Bebida"));
+        assertThrows(NoSuchElementException.class, () -> dao.findById(999L));
+    }
+
+    @Test
+    @DisplayName("findById(null) lanza IllegalArgumentException")
+    void findById_idNulo_lanzaExcepcion() {
+        assertThrows(IllegalArgumentException.class, () -> dao.findById(null));
+    }
+
+    @Test
+    @DisplayName("findAll devuelve lista vacía y copia defensiva")
+    void findAll_vacioYCopiaDefensiva() {
+        assertTrue(dao.findAll().isEmpty());
+
+        dao.add(new Producto(7L, "Te", 1.20, "Bebida"));
         List<Producto> copia = dao.findAll();
         copia.clear();
-        assertEquals(1, dao.findAll().size(),
-                "CP15: la lista interna no debe verse afectada por modificaciones externas");
+
+        assertEquals(1, dao.findAll().size());
     }
 }

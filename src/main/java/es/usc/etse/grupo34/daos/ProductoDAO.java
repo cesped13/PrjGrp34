@@ -19,24 +19,51 @@ public class ProductoDAO {
             throw new IllegalArgumentException("El producto no puede ser nulo");
         }
 
-        boolean idDuplicado = productos.stream()
-                .anyMatch(p -> p.getId().equals(producto.getId()));
+        if (existeId(producto.getId())) {
+            throw new IllegalArgumentException("Ya existe un producto con id " + producto.getId());
+        }
 
-        if (idDuplicado) {
-            throw new IllegalArgumentException("Ya existe un producto con ese id");
+        if (existeNombre(producto.getNombre())) {
+            throw new IllegalArgumentException("Ya existe un producto con nombre '" + producto.getNombre() + "'");
         }
 
         productos.add(producto);
     }
 
+
     public Producto findById(Long id) {
-        return productos.stream()
-                .filter(producto -> producto.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("No existe producto con id " + id));
+        if (id == null) {
+            throw new IllegalArgumentException("El id de busqueda no puede ser nulo");
+        }
+
+        for (Producto producto : productos) {
+            if (producto.getId().equals(id)) {
+                return producto;
+            }
+        }
+
+        throw new NoSuchElementException("No existe ningun producto con id " + id);
     }
 
     public List<Producto> findAll() {
         return new ArrayList<>(productos);
+    }
+
+    private boolean existeId(Long id) {
+        for (Producto producto : productos) {
+            if (producto.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean existeNombre(String nombre) {
+        for (Producto producto : productos) {
+            if (producto.getNombre().equals(nombre)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
