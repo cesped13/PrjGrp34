@@ -77,19 +77,6 @@ Ver Anexo CB (Caja Blanca) en la documentación del proyecto.
 
 ---
 
-## Columna Kanban actual
-
-- [ ] Preparada
-- [ ] Codificación / DoneC
-- [ ] DiseñoPruebas / DoneP
-- [ ] CajaNegra / DoneCN
-- [ ] CajaBlanca / DoneCB
-- [ ] Integración / DoneI
-- [ ] Informe
-- [ ] Entregada
-
----
-
 ## Referencias
 
 - Commit relacionado: <!-- enlace o hash -->
