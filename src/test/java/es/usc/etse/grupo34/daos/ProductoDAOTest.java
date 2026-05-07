@@ -100,4 +100,60 @@ class ProductoDAOTest {
 
         assertEquals(1, dao.findAll().size());
     }
+
+    // ---
+    // Caja blanca (Sprint 2)
+    // ---
+    /**
+     * Análisis de complejidad ciclomática sobre ProductoDAO:
+     *
+     *  add()      CC = 4 -> los caminos quedan cubiertos por los CPs de caja negra:
+     *                        P1 (producto nulo), P2 (id duplicado), P3 (nombre duplicado),
+     *                        P4 (alta correcta).
+     *  findById() CC = 3 -> P1 (id nulo) y P3 (no existe) cubiertos por CN;
+     *                        P2 (encuentra el producto tras iterar por más de un elemento)
+     *                        requiere CB1.
+     *  findAll()  CC = 1 -> no introduce decisiones.
+     */
+    @Nested
+    @DisplayName("Caja Blanca")
+    class CajaBlanca {
+
+        /**
+         * CB1 — findById(), camino P2.
+         *
+         * Camino: M1 -> M2(false) -> M2(true) -> M3
+         *
+         * El DAO contiene dos productos. El primero no coincide con el id buscado,
+         * por lo que el bucle continúa; el segundo sí coincide y se devuelve.
+         * Este caso fuerza la rama de iteración posterior que no queda garantizada
+         * con una búsqueda directa sobre el primer elemento insertado.
+         */
+        @Test
+        @DisplayName("CB1 – findById encuentra el producto en la 2ª iteración del bucle")
+        void cb1_findById_encuentraEnSegundaIteracion() {
+            Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
+            Producto segundo = new Producto(2L, "Zumo", 2.00, "Bebida");
+            dao.add(primero);
+            dao.add(segundo);
+
+            Producto encontrado = dao.findById(2L);
+
+            assertAll("El producto encontrado debe ser el segundo, tras descartar el primero",
+                    () -> assertSame(segundo, encontrado,
+                            "Debe devolver el producto con id 2L"),
+                    () -> assertNotSame(primero, encontrado,
+                            "No debe devolver el primer producto, cuyo id no coincide")
+            );
+        }
+    }
 }
+
+/*
+ * Resumen de la prueba HU-02:
+ * - Se mantienen las pruebas de caja negra para validar las reglas funcionales del Producto y del ProductoDAO.
+ * - Se añade una prueba de caja blanca en Sprint 2 para forzar el camino del bucle de findById cuando la coincidencia
+ *   no está en el primer elemento, completando la cobertura de decisión que no quedaba garantizada por los casos anteriores.
+ * - No se ha creado una clase nueva porque la cobertura adicional encaja de forma natural dentro de ProductoDAOTest,
+ *   siguiendo el mismo patrón de organización que StockDAOTest.
+ */
