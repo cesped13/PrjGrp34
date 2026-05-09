@@ -82,8 +82,35 @@ class MaquinaDAOTest {
     }
 
     @Test
+    void findByIdEncuentraMaquinaEnSegundaIteracion() {
+        // CB2
+        MaquinaDAO maquinaDAO = new MaquinaDAO();
+        Maquina primera = crearMaquina(1L, "M1");
+        Maquina segunda = crearMaquina(2L, "M2");
+
+        maquinaDAO.add(primera);
+        maquinaDAO.add(segunda);
+
+        Maquina recuperada = maquinaDAO.findById(2L);
+
+        assertSame(segunda, recuperada);
+    }
+
+    @Test
     void findByIdLanzaExcepcionSiNoExisteLaMaquina() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
+
+        assertThrows(NoSuchElementException.class,
+                () -> maquinaDAO.findById(99L));
+    }
+
+    @Test
+    void findByIdRecorreListaNoVaciaSinEncontrarCoincidencia() {
+        // CB3
+        MaquinaDAO maquinaDAO = new MaquinaDAO();
+        Maquina maquina = crearMaquina(1L, "M1");
+
+        maquinaDAO.add(maquina);
 
         assertThrows(NoSuchElementException.class,
                 () -> maquinaDAO.findById(99L));
