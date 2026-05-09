@@ -17,16 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Producto – pruebas unitarias (HU-05)")
 class ProductoTest {
 
-    // CP1 – Constructor válido
     @Test
     @DisplayName("CP1 – Constructor válido crea el producto con los datos correctos")
     void cp1_constructorValido_creaProducto() {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
         assertAll("Atributos del producto",
-                () -> assertEquals(1L,       producto.getId()),
-                () -> assertEquals("Agua",   producto.getNombre()),
-                () -> assertEquals(1.50,     producto.getPrecio(), 0.001),
+                () -> assertEquals(1L, producto.getId()),
+                () -> assertEquals("Agua", producto.getNombre()),
+                () -> assertEquals(1.50, producto.getPrecio(), 0.001),
                 () -> assertEquals("Bebida", producto.getCategoria())
         );
     }

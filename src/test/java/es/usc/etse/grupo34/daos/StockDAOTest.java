@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Pruebas de integración para StockDAO (HU-03, Sprint 1).
+ * Pruebas de integración para StockDAO (HU-03, Sprint 1 + Sprint 2).
  *
  * Estrategia:
  *  - StockDAO es el SUT (System Under Test).
@@ -22,6 +22,15 @@ import static org.mockito.Mockito.*;
  *    de implementaciones concretas de esas clases.
  *  - Se verifica tanto el estado (listas devueltas) como el
  *    comportamiento (invocaciones sobre los mocks cuando procede).
+ *
+ * Cobertura de caja blanca (McCabe) — Sprint 2:
+ *  - findByMaquinaYProducto(): CC=3. Los caminos P1 y P2 quedan cubiertos
+ *    por los CPs de caja negra (CP10, CP11, daoVacio). El camino P3
+ *    (bucle itera más de una vez antes de encontrar la coincidencia)
+ *    requiere CB1, añadido en la clase CajaBlanca anidada.
+ *  - getProductosParaReposicion(): CC=4. Los cuatro caminos quedan cubiertos
+ *    íntegramente por los CPs de caja negra existentes; no se añaden CPs nuevos.
+
  */
 @DisplayName("StockDAO – pruebas de integración")
 class StockDAOTest {
@@ -333,5 +342,70 @@ class StockDAOTest {
         // El DAO debe preguntar el id de cada máquina para filtrar
         verify(maquina1, atLeastOnce()).getId();
         verify(maquina2, atLeastOnce()).getId();
+    }
+
+    // ---
+    // Caja blanca (Sprint 2)
+    // ---
+    /**
+     * Análisis de complejidad ciclomática sobre StockDAO:
+     *
+     *  add()                       CC = 3  -> caminos P1-P3 cubiertos por CN (CP6, CP7, addIdDuplicado)
+     *  findByMaquina()             CC = 2  -> caminos P1-P2 cubiertos por CN (CP8, CP9)
+     *  findByMaquinaYProducto()    CC = 3  -> P1 (DAO vacío) y P2 (1ª iter. coincide) cubiertos por CN.
+     *                                        P3 (varias iteraciones, coincide en la 2ª o posterior) -> CB1
+     *  getProductosParaReposicion() CC = 4 -> los 4 caminos quedan cubiertos por los CPs de CN:
+     *                                        P1 -> maquinaSinStocks (lanza NSE)
+     *                                        P2 -> todosOk (lista vacía)
+     *                                        P3 -> conMezcla (solo uno necesita)
+     *                                        P4 -> todosAgotados (todos necesitan)
+     *                                        No se añaden CPs nuevos para este método.
+     */
+    @Nested
+    @DisplayName("Caja Blanca")
+    class CajaBlanca {
+ 
+        /**
+         * CB1 — findByMaquinaYProducto(), camino P3.
+         *
+         * Camino: M1 -> M2 -> M3(false) -> M2 -> M3(true) -> M4
+         *
+         * El DAO contiene dos stocks de la misma máquina. El primero NO coincide
+         * con el producto buscado (condición false en la 1ª iteración); el segundo
+         * si coincide (condición true en la 2ª iteración). Este camino no estaba
+         * forzado por ningún CP de caja negra, donde siempre se buscaba el primer
+         * elemento insertado.
+         *
+         * Sin este caso, la decisión "false en M3" dentro del bucle nunca se
+         * ejecutaba con un elemento posterior que sí coincidiese, dejando sin
+         * cubrir la rama de continuación del bucle tras un fallo de coincidencia.
+         */
+        @Test
+        @DisplayName("CB1 – findByMaquinaYProducto encuentra el stock en la 2ª iteración del bucle")
+        void cb1_findByMaquinaYProducto_encuentraEnSegundaIteracion() {
+            // Arrange: s1 no coincide con el producto buscado (producto2, id=20)
+            //          s2 si coincide (producto2, id=20)
+            // El bucle descarta s1 en la 1ª iteración y devuelve s2 en la 2ª.
+            StockMaquina s1 = new StockMaquina(1L, maquina1, producto1, 10, 2, 1.0);
+            StockMaquina s2 = new StockMaquina(2L, maquina1, producto2, 5,  1, 2.0);
+            dao.add(s1);
+            dao.add(s2);
+ 
+            StockMaquina resultado = dao.findByMaquinaYProducto(1L, 20L);
+ 
+            assertAll("El stock encontrado debe ser s2, descartando s1 en la primera iteración",
+                    () -> assertSame(s2, resultado,
+                            "Debe devolver s2, el stock vinculado a maquina1 y producto2"),
+                    () -> assertNotSame(s1, resultado,
+                            "No debe devolver s1, cuyo producto no coincide con el buscado")
+            );
+ 
+            // Verificación de comportamiento: el DAO debe haber consultado el id
+            // de maquina1 al menos dos veces (una por cada iteración del bucle)
+            // y el id de producto1 al menos una vez (para descartar s1).
+            verify(maquina1,  atLeast(2)).getId();
+            verify(producto1, atLeastOnce()).getId();
+            verify(producto2, atLeastOnce()).getId();
+        }
     }
 }

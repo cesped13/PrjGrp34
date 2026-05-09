@@ -40,12 +40,11 @@ class ProductoDAOTest {
         assertSame(producto, encontrado, "findById debe devolver la misma instancia");
     }
 
-    // CP11 – add(null) lanza excepción
     @Test
-    @DisplayName("CP11 – add(null) lanza IllegalArgumentException y el DAO queda vacío")
-    void cp11_addNulo_lanzaExcepcion() {
+    @DisplayName("add(null) lanza IllegalArgumentException y el DAO queda vacío")
+    void addNulo_lanzaExcepcion() {
         assertThrows(IllegalArgumentException.class, () -> dao.add(null));
-        assertTrue(dao.findAll().isEmpty(), "El DAO debe permanecer vacío");
+        assertTrue(dao.findAll().isEmpty());
     }
 
     // CP14 – findById inexistente
@@ -82,3 +81,4 @@ class ProductoDAOTest {
         orden.verify(duplicado, atLeastOnce()).getId();
     }
 }
+
