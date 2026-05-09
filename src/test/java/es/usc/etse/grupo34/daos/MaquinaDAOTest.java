@@ -51,6 +51,23 @@ class MaquinaDAOTest {
     }
 
     @Test
+    void addInsertaMaquinaConDaoNoVacioEIdDistinto() {
+        // CB1
+        MaquinaDAO maquinaDAO = new MaquinaDAO();
+        Maquina primera = crearMaquina(1L, "M1");
+        Maquina segunda = crearMaquina(2L, "M2");
+
+        maquinaDAO.add(primera);
+        maquinaDAO.add(segunda);
+        List<Maquina> maquinas = maquinaDAO.findAll();
+
+        assertAll("El DAO debe admitir ids distintos aunque no este vacio",
+                () -> assertEquals(2, maquinas.size()),
+                () -> assertSame(primera, maquinaDAO.findById(1L)),
+                () -> assertSame(segunda, maquinaDAO.findById(2L)));
+    }
+
+    @Test
     void findByIdDevuelveLaMaquinaExistente() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
         Maquina maquina = crearMaquina(5L, "M5");
