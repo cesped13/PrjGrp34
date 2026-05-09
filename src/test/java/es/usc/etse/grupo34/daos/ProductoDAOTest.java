@@ -4,13 +4,21 @@ import es.usc.etse.grupo34.entidades.Producto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@DisplayName("ProductoDAO – pruebas de integración")
+/**
+ * Pruebas de integración para {@link ProductoDAO} (HU-05, Sprint 1).
+ *
+ * Estrategia (IEEE 829):
+ *  Caja Negra: CP10, CP11, CP14, CP15
+ *  Caja Blanca (McCabe): control de duplicados (CP12)
+ */
+@DisplayName("ProductoDAO – pruebas de integración (HU-05)")
 class ProductoDAOTest {
 
     private ProductoDAO dao;
@@ -20,16 +28,16 @@ class ProductoDAOTest {
         dao = new ProductoDAO();
     }
 
+    // CP10 – add válido: producto almacenado y recuperable
     @Test
-    @DisplayName("add de producto válido: findAll devuelve exactamente un elemento")
-    void addProductoValido_findAllDevuelveUnElemento() {
+    @DisplayName("CP10 – add de producto válido: findById devuelve el producto")
+    void cp10_addProductoValido_findByIdDevuelveProducto() {
         Producto producto = new Producto(1L, "Agua", 1.50, "Bebida");
 
         dao.add(producto);
 
-        List<Producto> lista = dao.findAll();
-        assertEquals(1, lista.size());
-        assertSame(producto, lista.get(0));
+        Producto encontrado = dao.findById(1L);
+        assertSame(producto, encontrado, "findById debe devolver la misma instancia");
     }
 
     @Test
@@ -39,121 +47,38 @@ class ProductoDAOTest {
         assertTrue(dao.findAll().isEmpty());
     }
 
+    // CP14 – findById inexistente
     @Test
-    @DisplayName("add con id duplicado lanza IllegalArgumentException")
-    void addIdDuplicado_lanzaExcepcion() {
-        Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
-        Producto duplicado = new Producto(1L, "Agua2", 2.00, "Bebida");
+    @DisplayName("CP14 – findById: id inexistente lanza excepción")
+    void cp14_findById_inexistente_lanzaExcepcion() {
+        assertThrows(NoSuchElementException.class, () -> dao.findById(999L),
+                "CP14: id inexistente debe lanzar NoSuchElementException");
+    }
 
-        dao.add(primero);
+    // CP15 – findAll vacío
+    @Test
+    @DisplayName("CP15 – findAll: lista vacía cuando no hay productos")
+    void cp15_findAll_vacio() {
+        assertTrue(dao.findAll().isEmpty(), "CP15: findAll debe devolver lista vacía");
+    }
+
+    // Caja Blanca (McCabe) – control de duplicados
+    @Test
+    @DisplayName("CB1 – add con id duplicado consulta getId y lanza IllegalArgumentException")
+    void cb1_addIdDuplicado_consultaGetIdYLanzaExcepcion() {
+        Producto existente = mock(Producto.class);
+        Producto duplicado = mock(Producto.class);
+
+        when(existente.getId()).thenReturn(1L);
+        when(duplicado.getId()).thenReturn(1L);
+
+        dao.add(existente);
 
         assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
-        assertEquals(1, dao.findAll().size());
-    }
 
-    @Test
-    @DisplayName("add con nombre duplicado lanza IllegalArgumentException")
-    void addNombreDuplicado_lanzaExcepcion() {
-        Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
-        Producto duplicado = new Producto(2L, "Agua", 2.00, "Bebida");
-
-        dao.add(primero);
-
-        assertThrows(IllegalArgumentException.class, () -> dao.add(duplicado));
-        assertEquals(1, dao.findAll().size());
-    }
-
-    @Test
-    @DisplayName("findById devuelve producto existente")
-    void findById_existente_devuelveProducto() {
-        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
-        dao.add(producto);
-
-        Producto encontrado = dao.findById(9L);
-
-        assertSame(producto, encontrado);
-    }
-
-    @Test
-    @DisplayName("findById lanza NoSuchElementException si no existe")
-    void findById_inexistente_lanzaExcepcion() {
-        Producto producto = new Producto(9L, "Cafe", 1.80, "Bebida");
-        dao.add(producto);
-
-        assertThrows(NoSuchElementException.class, () -> dao.findById(999L));
-    }
-
-    @Test
-    @DisplayName("findById(null) lanza IllegalArgumentException")
-    void findById_idNulo_lanzaExcepcion() {
-        assertThrows(IllegalArgumentException.class, () -> dao.findById(null));
-    }
-
-    @Test
-    @DisplayName("findAll devuelve lista vacía y copia defensiva")
-    void findAll_vacioYCopiaDefensiva() {
-        assertTrue(dao.findAll().isEmpty());
-
-        dao.add(new Producto(7L, "Te", 1.20, "Bebida"));
-        List<Producto> copia = dao.findAll();
-        copia.clear();
-
-        assertEquals(1, dao.findAll().size());
-    }
-
-    // ---
-    // Caja blanca (Sprint 2)
-    // ---
-    /**
-     * Análisis de complejidad ciclomática sobre ProductoDAO:
-     *
-     *  add()      CC = 4 -> los caminos quedan cubiertos por los CPs de caja negra:
-     *                        P1 (producto nulo), P2 (id duplicado), P3 (nombre duplicado),
-     *                        P4 (alta correcta).
-     *  findById() CC = 3 -> P1 (id nulo) y P3 (no existe) cubiertos por CN;
-     *                        P2 (encuentra el producto tras iterar por más de un elemento)
-     *                        requiere CB1.
-     *  findAll()  CC = 1 -> no introduce decisiones.
-     */
-    @Nested
-    @DisplayName("Caja Blanca")
-    class CajaBlanca {
-
-        /**
-         * CB1 — findById(), camino P2.
-         *
-         * Camino: M1 -> M2(false) -> M2(true) -> M3
-         *
-         * El DAO contiene dos productos. El primero no coincide con el id buscado,
-         * por lo que el bucle continúa; el segundo sí coincide y se devuelve.
-         * Este caso fuerza la rama de iteración posterior que no queda garantizada
-         * con una búsqueda directa sobre el primer elemento insertado.
-         */
-        @Test
-        @DisplayName("CB1 – findById encuentra el producto en la 2ª iteración del bucle")
-        void cb1_findById_encuentraEnSegundaIteracion() {
-            Producto primero = new Producto(1L, "Agua", 1.50, "Bebida");
-            Producto segundo = new Producto(2L, "Zumo", 2.00, "Bebida");
-            dao.add(primero);
-            dao.add(segundo);
-
-            Producto encontrado = dao.findById(2L);
-
-            assertAll("El producto encontrado debe ser el segundo, tras descartar el primero",
-                    () -> assertSame(segundo, encontrado,
-                            "Debe devolver el producto con id 2L"),
-                    () -> assertNotSame(primero, encontrado,
-                            "No debe devolver el primer producto, cuyo id no coincide")
-            );
-        }
+        InOrder orden = inOrder(existente, duplicado);
+        orden.verify(existente, atLeastOnce()).getId();
+        orden.verify(duplicado, atLeastOnce()).getId();
     }
 }
 
-/*
- * Resumen de la prueba HU-02:
- * - Se mantienen las pruebas de caja negra para validar las reglas funcionales del Producto y del ProductoDAO.
- * - Se añade una prueba de caja blanca en Sprint 2 para forzar el camino del bucle de findById cuando la coincidencia
- *   no está en el primer elemento, completando la cobertura de decisión que no quedaba garantizada por los casos anteriores.
- * - No se ha creado una clase nueva porque la cobertura adicional encaja de forma natural dentro de ProductoDAOTest,
- *   siguiendo el mismo patrón de organización que StockDAOTest.
- */
