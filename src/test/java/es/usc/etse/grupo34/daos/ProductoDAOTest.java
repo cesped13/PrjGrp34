@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Pruebas de integración para {@link ProductoDAO} (HU-05, Sprint 1).
+ * Pruebas de integración para {@link ProductoDAO} (HU-02, Sprint 1).
  *
  * Estrategia (IEEE 829):
  *  Caja Negra: CP10, CP11, CP14, CP15
  *  Caja Blanca (McCabe): control de duplicados (CP12)
  */
-@DisplayName("ProductoDAO – pruebas de integración (HU-05)")
+@DisplayName("ProductoDAO – pruebas de integración (HU-02)")
 class ProductoDAOTest {
 
     private ProductoDAO dao;

@@ -8,13 +8,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para {@link Producto} (HU-05, Sprint 1).
+ * Pruebas unitarias para {@link Producto} (HU-02, Sprint 1).
  *
  * Estrategia (IEEE 829):
  *  Caja Negra: CP1, CP4/5, CP8/9
  *  Caja Blanca (McCabe): ramas de validación restantes
  */
-@DisplayName("Producto – pruebas unitarias (HU-05)")
+@DisplayName("Producto – pruebas unitarias (HU-02)")
 class ProductoTest {
 
     @Test
