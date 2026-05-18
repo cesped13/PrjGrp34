@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+// DAO en memoria para maquinas.
 public class MaquinaDAO {
 
     private List<Maquina> maquinas = new ArrayList<>();

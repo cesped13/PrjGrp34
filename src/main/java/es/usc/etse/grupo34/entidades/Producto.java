@@ -1,5 +1,6 @@
 package es.usc.etse.grupo34.entidades;
 
+// Representa un producto del catalogo.
 public class Producto {
 
     private final Long id;

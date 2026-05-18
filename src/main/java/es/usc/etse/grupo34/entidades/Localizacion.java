@@ -1,5 +1,6 @@
 package es.usc.etse.grupo34.entidades;
 
+// Representa la ubicacion de una maquina.
 public class Localizacion {
 
     private Long id;

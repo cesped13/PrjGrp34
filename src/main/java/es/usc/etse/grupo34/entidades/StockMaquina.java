@@ -3,6 +3,7 @@ package es.usc.etse.grupo34.entidades;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+// Representa el stock de un producto en una maquina.
 public class StockMaquina {
 
     private final Long id;

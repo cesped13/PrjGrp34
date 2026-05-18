@@ -11,13 +11,6 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Pruebas de integración para {@link ProductoDAO} (HU-02, Sprint 1).
- *
- * Estrategia (IEEE 829):
- *  Caja Negra: CP10, CP11, CP14, CP15
- *  Caja Blanca (McCabe): control de duplicados (CP12)
- */
 @DisplayName("ProductoDAO – pruebas de integración (HU-02)")
 class ProductoDAOTest {
 
@@ -28,7 +21,7 @@ class ProductoDAOTest {
         dao = new ProductoDAO();
     }
 
-    // CP10 – add válido: producto almacenado y recuperable
+    // CP10: add valido y findById posterior.
     @Test
     @DisplayName("CP10 – add de producto válido: findById devuelve el producto")
     void cp10_addProductoValido_findByIdDevuelveProducto() {
@@ -40,6 +33,7 @@ class ProductoDAOTest {
         assertSame(producto, encontrado, "findById debe devolver la misma instancia");
     }
 
+    // CP12: add con producto nulo.
     @Test
     @DisplayName("add(null) lanza IllegalArgumentException y el DAO queda vacío")
     void addNulo_lanzaExcepcion() {
@@ -47,7 +41,7 @@ class ProductoDAOTest {
         assertTrue(dao.findAll().isEmpty());
     }
 
-    // CP14 – findById inexistente
+    // CP14: findById con id inexistente.
     @Test
     @DisplayName("CP14 – findById: id inexistente lanza excepción")
     void cp14_findById_inexistente_lanzaExcepcion() {
@@ -55,14 +49,14 @@ class ProductoDAOTest {
                 "CP14: id inexistente debe lanzar NoSuchElementException");
     }
 
-    // CP15 – findAll vacío
+    // CP15: findAll con DAO vacio.
     @Test
     @DisplayName("CP15 – findAll: lista vacía cuando no hay productos")
     void cp15_findAll_vacio() {
         assertTrue(dao.findAll().isEmpty(), "CP15: findAll debe devolver lista vacía");
     }
 
-    // Caja Blanca (McCabe) – control de duplicados
+    // CB1: add con id duplicado usando mocks.
     @Test
     @DisplayName("CB1 – add con id duplicado consulta getId y lanza IllegalArgumentException")
     void cb1_addIdDuplicado_consultaGetIdYLanzaExcepcion() {
@@ -81,4 +75,3 @@ class ProductoDAOTest {
         orden.verify(duplicado, atLeastOnce()).getId();
     }
 }
-

@@ -1,5 +1,6 @@
 package es.usc.etse.grupo34.entidades;
 
+// Representa una maquina expendedora.
 public class Maquina {
 
     private Long id;

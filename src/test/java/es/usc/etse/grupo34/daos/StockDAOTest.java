@@ -13,29 +13,8 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Pruebas de integración para StockDAO (HU-03, Sprint 1 + Sprint 2).
- *
- * Estrategia:
- *  - StockDAO es el SUT (System Under Test).
- *  - Maquina y Producto se simulan con Mockito para aislar el DAO
- *    de implementaciones concretas de esas clases.
- *  - Se verifica tanto el estado (listas devueltas) como el
- *    comportamiento (invocaciones sobre los mocks cuando procede).
- *
- * Cobertura de caja blanca (McCabe) — Sprint 2:
- *  - findByMaquinaYProducto(): CC=3. Los caminos P1 y P2 quedan cubiertos
- *    por los CPs de caja negra (CP10, CP11, daoVacio). El camino P3
- *    (bucle itera más de una vez antes de encontrar la coincidencia)
- *    requiere CB1, añadido en la clase CajaBlanca anidada.
- *  - getProductosParaReposicion(): CC=4. Los cuatro caminos quedan cubiertos
- *    íntegramente por los CPs de caja negra existentes; no se añaden CPs nuevos.
-
- */
 @DisplayName("StockDAO – pruebas de integración")
 class StockDAOTest {
-
-    // fixtures
 
     AutoCloseable acl;
 
@@ -51,7 +30,6 @@ class StockDAOTest {
         acl = MockitoAnnotations.openMocks(this);
         dao = new StockDAO();
 
-        // Los mocks de Maquina/Producto deben devolver sus ids cuando se les consulte
         when(maquina1.getId()).thenReturn(1L);
         when(maquina2.getId()).thenReturn(2L);
         when(producto1.getId()).thenReturn(10L);
@@ -63,16 +41,11 @@ class StockDAOTest {
         acl.close();
     }
 
-    // ---
-    // add()
-    // ---
-
     @Nested
     @DisplayName("add()")
     class Add {
 
-        // CP6
-
+        // CP6: add con stock valido.
         @Test
         @DisplayName("CP6 – add con stock válido lo almacena correctamente")
         void addStockValido_seAlmacena() {
@@ -87,8 +60,7 @@ class StockDAOTest {
             );
         }
 
-        // CP7
-
+        // CP7: add con stock nulo.
         @Test
         @DisplayName("CP7 – add(null) lanza IllegalArgumentException")
         void addNull_lanzaIllegalArgumentException() {
@@ -100,6 +72,7 @@ class StockDAOTest {
             assertNotNull(ex.getMessage(), "El mensaje de la excepción no puede ser nulo");
         }
 
+        // add con id duplicado.
         @Test
         @DisplayName("add con id duplicado lanza IllegalArgumentException")
         void addIdDuplicado_lanzaIllegalArgumentException() {
@@ -116,16 +89,11 @@ class StockDAOTest {
         }
     }
 
-    // ---
-    // findByMaquina()
-    // ---
-
     @Nested
     @DisplayName("findByMaquina()")
     class FindByMaquina {
 
-        // CP8
-
+        // CP8: findByMaquina con stocks registrados.
         @Test
         @DisplayName("CP8 – findByMaquina devuelve todos los stocks de la máquina solicitada")
         void findByMaquina_conStocks_devuelveLista() {
@@ -146,8 +114,7 @@ class StockDAOTest {
             );
         }
 
-        // CP9
-
+        // CP9: findByMaquina sin stocks para esa maquina.
         @Test
         @DisplayName("CP9 – findByMaquina devuelve lista vacía si la máquina no tiene stocks")
         void findByMaquina_sinStocks_devuelveListaVacia() {
@@ -157,6 +124,7 @@ class StockDAOTest {
             assertTrue(resultado.isEmpty(), "Debe devolver lista vacía para una máquina sin stocks");
         }
 
+        // la lista devuelta es independiente.
         @Test
         @DisplayName("findByMaquina devuelve copia independiente (modificar la lista no afecta al DAO)")
         void findByMaquina_devuelveCopiaDefensiva() {
@@ -172,16 +140,11 @@ class StockDAOTest {
         }
     }
 
-    // ---
-    // findByMaquinaYProducto()
-    // ---
-
     @Nested
     @DisplayName("findByMaquinaYProducto()")
     class FindByMaquinaYProducto {
 
-        // CP10
-
+        // CP10: findByMaquinaYProducto con combinacion existente.
         @Test
         @DisplayName("CP10 – findByMaquinaYProducto devuelve el stock correcto")
         void findByMaquinaYProducto_existente_devuelveStock() {
@@ -196,8 +159,7 @@ class StockDAOTest {
                     "Debe devolver exactamente el stock vinculado a la máquina 1 y producto 10");
         }
 
-        // CP11
-
+        // CP11: findByMaquinaYProducto con combinacion inexistente.
         @Test
         @DisplayName("CP11 – findByMaquinaYProducto lanza NoSuchElementException si no existe la combinación")
         void findByMaquinaYProducto_noExistente_lanzaNoSuchElementException() {
@@ -211,6 +173,7 @@ class StockDAOTest {
             );
         }
 
+        // CP11: findByMaquinaYProducto con DAO vacio.
         @Test
         @DisplayName("findByMaquinaYProducto lanza NoSuchElementException en DAO vacío")
         void findByMaquinaYProducto_daoVacio_lanzaNoSuchElementException() {
@@ -221,6 +184,7 @@ class StockDAOTest {
             );
         }
 
+        // CP10: verificacion Mockito de la busqueda existente.
         @Test
         @DisplayName("findByMaquinaYProducto invoca getId() sobre los mocks al buscar")
         void findByMaquinaYProducto_invocaGetIdEnColaboradores() {
@@ -229,26 +193,20 @@ class StockDAOTest {
 
             dao.findByMaquinaYProducto(1L, 10L);
 
-            // El DAO debe consultar los ids de la máquina y el producto para filtrar
             verify(maquina1,  atLeastOnce()).getId();
             verify(producto1, atLeastOnce()).getId();
         }
     }
 
-    // ---
-    // getProductosParaReposicion()
-    // ---
-
     @Nested
     @DisplayName("getProductosParaReposicion()")
     class GetProductosParaReposicion {
 
+        // CP13 y CP14: mezcla de productos con y sin reposicion.
         @Test
         @DisplayName("Devuelve solo los stocks que necesitan reposición")
         void getProductosParaReposicion_conMezcla_devuelveSoloLosQueNecesitan() {
-            // s1: cantidad=0  → agotamiento hoy → necesita reposición
             StockMaquina s1 = new StockMaquina(1L, maquina1, producto1, 0,   0, 1.0);
-            // s2: cantidad=100 → agotamiento lejos → no necesita reposición
             StockMaquina s2 = new StockMaquina(2L, maquina1, producto2, 100, 0, 1.0);
             dao.add(s1);
             dao.add(s2);
@@ -262,6 +220,7 @@ class StockDAOTest {
             );
         }
 
+        // CP14: ningun producto necesita reposicion.
         @Test
         @DisplayName("Devuelve lista vacía si ningún stock de la máquina necesita reposición")
         void getProductosParaReposicion_todosOk_devuelveListaVacia() {
@@ -274,6 +233,7 @@ class StockDAOTest {
                     "Debe devolver lista vacía si ningún producto necesita reposición");
         }
 
+        // Camino P1 de getProductosParaReposicion: maquina sin stocks.
         @Test
         @DisplayName("Lanza NoSuchElementException si la máquina no tiene ningún stock registrado")
         void getProductosParaReposicion_maquinaSinStocks_lanzaNoSuchElementException() {
@@ -284,6 +244,7 @@ class StockDAOTest {
             );
         }
 
+        // CP13: todos los productos necesitan reposicion.
         @Test
         @DisplayName("Devuelve todos los stocks cuando todos necesitan reposición")
         void getProductosParaReposicion_todosAgotados_devuelveTodos() {
@@ -299,10 +260,7 @@ class StockDAOTest {
         }
     }
 
-    // ---
-    // findAll()
-    // ---
-
+    // findAll con DAO vacio.
     @Test
     @DisplayName("findAll devuelve lista vacía cuando el DAO está vacío")
     void findAll_daoVacio_devuelveListaVacia() {
@@ -312,6 +270,7 @@ class StockDAOTest {
         assertTrue(resultado.isEmpty(), "findAll debe devolver lista vacía en un DAO recién creado");
     }
 
+    // findAll con varios stocks.
     @Test
     @DisplayName("findAll devuelve todos los stocks registrados sin importar la máquina")
     void findAll_variasEntradas_devuelveTodos() {
@@ -325,10 +284,7 @@ class StockDAOTest {
         assertEquals(2, resultado.size(), "findAll debe devolver los 2 stocks registrados");
     }
 
-    // ---
-    // Verificaciones de comportamiento con Mockito
-    // ---
-
+    // CP8: verificacion Mockito del filtrado por maquina.
     @Test
     @DisplayName("findByMaquina consulta getId() de cada stock al filtrar por máquina")
     void findByMaquina_invocaGetIdDeMaquina() {
@@ -339,53 +295,18 @@ class StockDAOTest {
 
         dao.findByMaquina(1L);
 
-        // El DAO debe preguntar el id de cada máquina para filtrar
         verify(maquina1, atLeastOnce()).getId();
         verify(maquina2, atLeastOnce()).getId();
     }
 
-    // ---
-    // Caja blanca (Sprint 2)
-    // ---
-    /**
-     * Análisis de complejidad ciclomática sobre StockDAO:
-     *
-     *  add()                       CC = 3  -> caminos P1-P3 cubiertos por CN (CP6, CP7, addIdDuplicado)
-     *  findByMaquina()             CC = 2  -> caminos P1-P2 cubiertos por CN (CP8, CP9)
-     *  findByMaquinaYProducto()    CC = 3  -> P1 (DAO vacío) y P2 (1ª iter. coincide) cubiertos por CN.
-     *                                        P3 (varias iteraciones, coincide en la 2ª o posterior) -> CB1
-     *  getProductosParaReposicion() CC = 4 -> los 4 caminos quedan cubiertos por los CPs de CN:
-     *                                        P1 -> maquinaSinStocks (lanza NSE)
-     *                                        P2 -> todosOk (lista vacía)
-     *                                        P3 -> conMezcla (solo uno necesita)
-     *                                        P4 -> todosAgotados (todos necesitan)
-     *                                        No se añaden CPs nuevos para este método.
-     */
     @Nested
     @DisplayName("Caja Blanca")
     class CajaBlanca {
  
-        /**
-         * CB1 — findByMaquinaYProducto(), camino P3.
-         *
-         * Camino: M1 -> M2 -> M3(false) -> M2 -> M3(true) -> M4
-         *
-         * El DAO contiene dos stocks de la misma máquina. El primero NO coincide
-         * con el producto buscado (condición false en la 1ª iteración); el segundo
-         * si coincide (condición true en la 2ª iteración). Este camino no estaba
-         * forzado por ningún CP de caja negra, donde siempre se buscaba el primer
-         * elemento insertado.
-         *
-         * Sin este caso, la decisión "false en M3" dentro del bucle nunca se
-         * ejecutaba con un elemento posterior que sí coincidiese, dejando sin
-         * cubrir la rama de continuación del bucle tras un fallo de coincidencia.
-         */
+        // CB1: findByMaquinaYProducto encuentra el stock en la segunda iteracion.
         @Test
         @DisplayName("CB1 – findByMaquinaYProducto encuentra el stock en la 2ª iteración del bucle")
         void cb1_findByMaquinaYProducto_encuentraEnSegundaIteracion() {
-            // Arrange: s1 no coincide con el producto buscado (producto2, id=20)
-            //          s2 si coincide (producto2, id=20)
-            // El bucle descarta s1 en la 1ª iteración y devuelve s2 en la 2ª.
             StockMaquina s1 = new StockMaquina(1L, maquina1, producto1, 10, 2, 1.0);
             StockMaquina s2 = new StockMaquina(2L, maquina1, producto2, 5,  1, 2.0);
             dao.add(s1);
@@ -400,9 +321,6 @@ class StockDAOTest {
                             "No debe devolver s1, cuyo producto no coincide con el buscado")
             );
  
-            // Verificación de comportamiento: el DAO debe haber consultado el id
-            // de maquina1 al menos dos veces (una por cada iteración del bucle)
-            // y el id de producto1 al menos una vez (para descartar s1).
             verify(maquina1,  atLeast(2)).getId();
             verify(producto1, atLeastOnce()).getId();
             verify(producto2, atLeastOnce()).getId();

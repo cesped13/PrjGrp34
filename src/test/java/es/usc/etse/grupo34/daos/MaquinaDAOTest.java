@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MaquinaDAOTest {
 
+    // CP11: add con maquina valida.
     @Test
     void addGuardaUnaMaquinaValida() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
@@ -30,6 +31,7 @@ class MaquinaDAOTest {
                 () -> assertSame(maquina, maquinaDAO.findById(1L)));
     }
 
+    // CP12: add con maquina nula.
     @Test
     void addLanzaExcepcionSiLaMaquinaEsNula() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
@@ -38,6 +40,7 @@ class MaquinaDAOTest {
                 () -> maquinaDAO.add(null));
     }
 
+    // CP13: add con id duplicado.
     @Test
     void addLanzaExcepcionSiElIdEstaDuplicado() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
@@ -50,9 +53,9 @@ class MaquinaDAOTest {
                 () -> maquinaDAO.add(duplicada));
     }
 
+    // CB1: add con DAO no vacio e id distinto.
     @Test
     void addInsertaMaquinaConDaoNoVacioEIdDistinto() {
-        // CB1
         MaquinaDAO maquinaDAO = new MaquinaDAO();
         Maquina primera = crearMaquina(1L, "M1");
         Maquina segunda = crearMaquina(2L, "M2");
@@ -67,6 +70,7 @@ class MaquinaDAOTest {
                 () -> assertSame(segunda, maquinaDAO.findById(2L)));
     }
 
+    // CP14: findById con id existente.
     @Test
     void findByIdDevuelveLaMaquinaExistente() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
@@ -81,9 +85,9 @@ class MaquinaDAOTest {
                 () -> assertSame(maquina, recuperada));
     }
 
+    // CB2: findById encuentra la maquina en la segunda iteracion.
     @Test
     void findByIdEncuentraMaquinaEnSegundaIteracion() {
-        // CB2
         MaquinaDAO maquinaDAO = new MaquinaDAO();
         Maquina primera = crearMaquina(1L, "M1");
         Maquina segunda = crearMaquina(2L, "M2");
@@ -96,6 +100,7 @@ class MaquinaDAOTest {
         assertSame(segunda, recuperada);
     }
 
+    // CP15: findById con id inexistente.
     @Test
     void findByIdLanzaExcepcionSiNoExisteLaMaquina() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();
@@ -104,9 +109,9 @@ class MaquinaDAOTest {
                 () -> maquinaDAO.findById(99L));
     }
 
+    // CB3: findById recorre una lista no vacia sin coincidencias.
     @Test
     void findByIdRecorreListaNoVaciaSinEncontrarCoincidencia() {
-        // CB3
         MaquinaDAO maquinaDAO = new MaquinaDAO();
         Maquina maquina = crearMaquina(1L, "M1");
 
@@ -116,6 +121,7 @@ class MaquinaDAOTest {
                 () -> maquinaDAO.findById(99L));
     }
 
+    // CP16: findAll con DAO vacio.
     @Test
     void findAllDevuelveListaVaciaSiNoHayMaquinas() {
         MaquinaDAO maquinaDAO = new MaquinaDAO();

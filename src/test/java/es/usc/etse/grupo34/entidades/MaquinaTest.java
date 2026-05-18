@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MaquinaTest {
 
+    // CP7: maquina valida con nombre y localizacion.
     @Test
     void creaMaquinaValida() {
         Localizacion localizacion = new Localizacion(1L, "Centro", 43.0, -8.0);
@@ -21,6 +22,7 @@ class MaquinaTest {
                 () -> assertSame(localizacion, maquina.getLocalizacion()));
     }
 
+    // CP8: nombre vacio.
     @Test
     void lanzaExcepcionSiNombreEsVacio() {
         Localizacion localizacion = new Localizacion(1L, "Centro", 43.0, -8.0);
@@ -29,6 +31,7 @@ class MaquinaTest {
                 () -> new Maquina(7L, "", localizacion));
     }
 
+    // CP9: nombre nulo.
     @Test
     void lanzaExcepcionSiNombreEsNulo() {
         Localizacion localizacion = new Localizacion(1L, "Centro", 43.0, -8.0);
@@ -37,6 +40,7 @@ class MaquinaTest {
                 () -> new Maquina(7L, null, localizacion));
     }
 
+    // CP10: localizacion nula.
     @Test
     void lanzaExcepcionSiLocalizacionEsNula() {
         assertThrows(IllegalArgumentException.class,
